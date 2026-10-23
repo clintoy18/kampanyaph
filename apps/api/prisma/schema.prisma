@@ -1,0 +1,294 @@
+// Phase 1 proposal only. Review entities, tenant constraints, and roles before a migration.
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  importFileExtension = "ts"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum MembershipRole {
+  OWNER
+  EDITOR
+  REVIEWER
+}
+
+enum ContentStatus {
+  DRAFT
+  IN_REVIEW
+  APPROVED
+  PUBLISHED
+}
+
+enum ReviewOutcome {
+  APPROVED
+  CHANGES_REQUESTED
+}
+
+enum GenerationMethod {
+  FORMULA_GUIDED
+}
+
+model User {
+  id                String            @id @default(uuid()) @db.Uuid
+  email             String            @unique
+  displayName       String
+  passwordHash      String
+  createdAt         DateTime          @default(now())
+  memberships       Membership[]
+  sessions          Session[]
+  passwordResets    PasswordReset[]
+  sentInvitations   Invitation[]      @relation("InvitationSender")
+  briefsCreated     StrategyBrief[]   @relation("BriefCreator")
+  generationsMade   GenerationRun[]   @relation("GenerationActor")
+  contentCreated    ContentItem[]     @relation("ContentCreator")
+  revisions         ContentRevision[] @relation("RevisionAuthor")
+  reviewDecisions   ReviewDecision[]  @relation("ReviewActor")
+  confirmedEvidence EvidenceSource[]  @relation("EvidenceConfirmer")
+}
+
+model Session {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id])
+
+  @@index([userId, expiresAt])
+}
+
+model PasswordReset {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @db.Uuid
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+  user       User      @relation(fields: [userId], references: [id])
+
+  @@index([userId, expiresAt])
+}
+
+model Business {
+  id           String           @id @default(uuid()) @db.Uuid
+  name         String
+  description  String?          @db.Text
+  industry     String?
+  timezone     String           @default("Asia/Manila")
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  memberships  Membership[]
+  invitations  Invitation[]
+  brandContext BrandContext?
+  offerings    Offering[]
+  audiences    Audience[]
+  evidence     EvidenceSource[]
+  briefs       StrategyBrief[]
+  generations  GenerationRun[]
+  campaigns    Campaign[]
+  contentItems ContentItem[]
+}
+
+model Invitation {
+  id          String         @id @default(uuid()) @db.Uuid
+  businessId  String         @db.Uuid
+  email       String
+  role        MembershipRole
+  tokenHash   String         @unique
+  invitedById String         @db.Uuid
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  createdAt   DateTime       @default(now())
+  business    Business       @relation(fields: [businessId], references: [id])
+  invitedBy   User           @relation("InvitationSender", fields: [invitedById], references: [id])
+
+  @@index([businessId, email])
+}
+
+model Membership {
+  businessId String         @db.Uuid
+  userId     String         @db.Uuid
+  role       MembershipRole
+  createdAt  DateTime       @default(now())
+  business   Business       @relation(fields: [businessId], references: [id])
+  user       User           @relation(fields: [userId], references: [id])
+
+  @@id([businessId, userId])
+  @@index([userId])
+  @@index([businessId, role])
+}
+
+model BrandContext {
+  id               String   @id @default(uuid()) @db.Uuid
+  businessId       String   @unique @db.Uuid
+  voice            String   @db.Text
+  valueProposition String?  @db.Text
+  boundaries       String?  @db.Text
+  updatedAt        DateTime @updatedAt
+  business         Business @relation(fields: [businessId], references: [id])
+}
+
+model Offering {
+  id          String   @id @default(uuid()) @db.Uuid
+  businessId  String   @db.Uuid
+  name        String
+  description String   @db.Text
+  business    Business @relation(fields: [businessId], references: [id])
+
+  @@index([businessId])
+}
+
+model Audience {
+  id         String          @id @default(uuid()) @db.Uuid
+  businessId String          @db.Uuid
+  name       String
+  needs      String          @db.Text
+  business   Business        @relation(fields: [businessId], references: [id])
+  briefs     StrategyBrief[]
+
+  @@unique([businessId, id])
+}
+
+model EvidenceSource {
+  id            String    @id @default(uuid()) @db.Uuid
+  businessId    String    @db.Uuid
+  label         String
+  claim         String    @db.Text
+  sourceUrl     String?
+  confirmedAt   DateTime?
+  confirmedById String?   @db.Uuid
+  business      Business  @relation(fields: [businessId], references: [id])
+  confirmedBy   User?     @relation("EvidenceConfirmer", fields: [confirmedById], references: [id])
+  briefs        StrategyBrief[]
+
+  @@unique([businessId, id])
+  @@index([businessId])
+}
+
+model StrategyBrief {
+  id               String          @id @default(uuid()) @db.Uuid
+  businessId       String          @db.Uuid
+  audienceId       String          @db.Uuid
+  trustEvidenceId  String?         @db.Uuid
+  createdById      String          @db.Uuid
+  objective        String
+  platform         String
+  campaignTheme    String?
+  hook             String?
+  valueProposition String?
+  callToAction     String?
+  pillars          Json?
+  angles           Json?
+  rationale        String?         @db.Text
+  createdAt        DateTime        @default(now())
+  business         Business        @relation(fields: [businessId], references: [id])
+  audience         Audience        @relation(fields: [businessId, audienceId], references: [businessId, id])
+  trustEvidence    EvidenceSource? @relation(fields: [businessId, trustEvidenceId], references: [businessId, id])
+  createdBy        User            @relation("BriefCreator", fields: [createdById], references: [id])
+  generations      GenerationRun[]
+  contentItems     ContentItem[]
+
+  @@unique([businessId, id])
+  @@index([businessId, audienceId])
+}
+
+model GenerationRun {
+  id                String           @id @default(uuid()) @db.Uuid
+  businessId        String           @db.Uuid
+  strategyBriefId   String           @db.Uuid
+  createdById       String           @db.Uuid
+  method            GenerationMethod @default(FORMULA_GUIDED)
+  model             String
+  templateVersion   String
+  inputSnapshotHash String?
+  inputTokens       Int?
+  outputTokens      Int?
+  estimatedCostUsd  Decimal?         @db.Decimal(12, 6)
+  createdAt         DateTime         @default(now())
+  business          Business         @relation(fields: [businessId], references: [id])
+  strategyBrief     StrategyBrief    @relation(fields: [businessId, strategyBriefId], references: [businessId, id])
+  createdBy         User             @relation("GenerationActor", fields: [createdById], references: [id])
+  contentItems      ContentItem[]
+
+  @@unique([businessId, id])
+  @@index([businessId, strategyBriefId])
+}
+
+model Campaign {
+  id           String        @id @default(uuid()) @db.Uuid
+  businessId   String        @db.Uuid
+  title        String
+  objective    String        @db.Text
+  startsAt     DateTime?
+  endsAt       DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  business     Business      @relation(fields: [businessId], references: [id])
+  contentItems ContentItem[]
+
+  @@unique([businessId, id])
+}
+
+model ContentItem {
+  id                  String            @id @default(uuid()) @db.Uuid
+  businessId          String            @db.Uuid
+  strategyBriefId     String            @db.Uuid
+  createdById         String            @db.Uuid
+  generationRunId     String?           @db.Uuid
+  campaignId          String?           @db.Uuid
+  title               String
+  platform            String
+  status              ContentStatus     @default(DRAFT)
+  plannedAt           DateTime?
+  manuallyPublishedAt DateTime?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  business            Business          @relation(fields: [businessId], references: [id])
+  strategyBrief       StrategyBrief     @relation(fields: [businessId, strategyBriefId], references: [businessId, id])
+  createdBy           User              @relation("ContentCreator", fields: [createdById], references: [id])
+  generationRun       GenerationRun?    @relation(fields: [businessId, generationRunId], references: [businessId, id])
+  campaign            Campaign?         @relation(fields: [businessId, campaignId], references: [businessId, id])
+  revisions           ContentRevision[]
+  reviewDecisions     ReviewDecision[]
+
+  @@unique([businessId, id])
+  @@index([businessId, status, plannedAt])
+  @@index([businessId, campaignId])
+}
+
+model ContentRevision {
+  id              String           @id @default(uuid()) @db.Uuid
+  businessId      String           @db.Uuid
+  contentItemId   String           @db.Uuid
+  version         Int
+  body            String           @db.Text
+  authorId        String           @db.Uuid
+  createdAt       DateTime         @default(now())
+  contentItem     ContentItem      @relation(fields: [businessId, contentItemId], references: [businessId, id])
+  author          User             @relation("RevisionAuthor", fields: [authorId], references: [id])
+  reviewDecisions ReviewDecision[]
+
+  @@unique([contentItemId, version])
+  @@unique([businessId, contentItemId, id])
+}
+
+model ReviewDecision {
+  id            String          @id @default(uuid()) @db.Uuid
+  businessId    String          @db.Uuid
+  contentItemId String          @db.Uuid
+  revisionId    String          @db.Uuid
+  reviewerId    String          @db.Uuid
+  outcome       ReviewOutcome
+  checklist     Json
+  note          String?         @db.Text
+  createdAt     DateTime        @default(now())
+  contentItem   ContentItem     @relation(fields: [businessId, contentItemId], references: [businessId, id])
+  revision      ContentRevision @relation(fields: [businessId, contentItemId, revisionId], references: [businessId, contentItemId, id])
+  reviewer      User            @relation("ReviewActor", fields: [reviewerId], references: [id])
+
+  @@index([businessId, contentItemId, createdAt])
+}

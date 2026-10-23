@@ -1,0 +1,4 @@
+# Kampanya web app instructions
+Scope: `apps/web/**`. Follow root `AGENTS.md`.
+React + TypeScript + Vite; deploy independently to Vercel with root `apps/web`.
+Read root skills: `frontend-design`, `design-system`, `frontend-architecture`, `ui-quality-gate`. Obtain design-direction approval before new UI workflows. Use the approved semantic tokens, Tailwind CSS, and selective shadcn/ui components; keep the Filipino small-business context credible. Use feature-first modules, strict typing, accessible responsive components, real content hierarchy, and loading/empty/error/forbidden states. No generic AI SaaS dashboards, filler statistics, or unnecessary glassmorphism. Use a typed REST/OpenAPI client; never import `apps/api` implementation or include OpenAI/DB secrets. Backend authorizes tenant access. Follow the root execution mode and phase gates.

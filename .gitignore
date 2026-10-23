@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.test-dist/
+coverage/
+.npm-cache/
+.env
+.env.*
+!.env.example
+*.tsbuildinfo
+apps/api/generated/
+apps/api/src/generated/
+apps/api/.dev-outbox/
+.DS_Store

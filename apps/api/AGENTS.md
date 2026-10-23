@@ -1,0 +1,6 @@
+# Kampanya API app instructions
+Scope: `apps/api/**`. Follow root `AGENTS.md`.
+Express + Node.js + TypeScript, Prisma/PostgreSQL, OpenAI server-side; deploy independently to Render with root `apps/api`.
+Read root skills: `backend-architecture`, `data-security`, `ai-content-engine`, `api-testing`. Keep the modular monolith and `/api/v1` OpenAPI contract. Validate DTOs and enforce membership, role, and tenant checks on every protected request. Keep sessions, PostgreSQL, Prisma, and OpenAI server-side; require CSRF protection for cookie-authenticated writes and review migrations before applying them. Use structured OpenAI output, cost and rate limits, and verified evidence. Never fabricate business claims. Test isolation, permissions, transitions, and failures; follow the root execution mode and phase gates.
+
+Approved roles: Owners manage core business details and membership; Owners and Editors edit brand context, audiences, evidence, campaigns, and content. Reviewers read business marketing data and review submitted content. Editors cannot approve; Reviewers cannot edit; no role may decide on its own content. Authorize against membership in the requested business on every write and nested read.

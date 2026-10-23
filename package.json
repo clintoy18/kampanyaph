@@ -1,0 +1,11 @@
+{
+  "name": "ai-marketer",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "lint": "npm --prefix apps/web run lint && npm --prefix apps/api run lint",
+    "typecheck": "npm --prefix apps/web run typecheck && npm --prefix apps/api run typecheck",
+    "test": "npm --prefix apps/web run test && npm --prefix apps/api run test",
+    "build": "npm --prefix apps/web run build && npm --prefix apps/api run build"
+  }
+}

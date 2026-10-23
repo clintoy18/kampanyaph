@@ -1,0 +1,2112 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Kampanya API",
+    "version": "0.2.0",
+    "description": "Versioned MVP contract. Protected writes require an active session, allowed Origin, X-Kampanya-Request: 1, and X-CSRF-Token."
+  },
+  "servers": [{ "url": "/" }],
+  "paths": {
+    "/healthz": {
+      "get": {
+        "summary": "Health check",
+        "operationId": "getHealthz",
+        "responses": {
+          "200": { "description": "Health check" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      }
+    },
+    "/api/v1": {
+      "get": {
+        "summary": "API metadata",
+        "operationId": "getApiV1",
+        "responses": {
+          "200": { "description": "API metadata" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "summary": "Register with email and password",
+        "operationId": "postApiV1AuthRegister",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string" },
+                  "password": { "type": "string" },
+                  "displayName": { "type": "string" }
+                },
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Register with email and password" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Kampanya-Request",
+            "required": true,
+            "schema": { "type": "string", "const": "1" }
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "summary": "Start a session",
+        "operationId": "postApiV1AuthLogin",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string" },
+                  "password": { "type": "string" }
+                },
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Start a session" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Kampanya-Request",
+            "required": true,
+            "schema": { "type": "string", "const": "1" }
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "summary": "Current user and CSRF token",
+        "operationId": "getApiV1AuthMe",
+        "security": [{ "sessionCookie": [] }],
+        "responses": {
+          "200": { "description": "Current user and CSRF token" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "summary": "Revoke the current session",
+        "operationId": "postApiV1AuthLogout",
+        "security": [{ "sessionCookie": [] }],
+        "responses": {
+          "204": { "description": "Revoke the current session" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Kampanya-Request",
+            "required": true,
+            "schema": { "type": "string", "const": "1" }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/forgot-password": {
+      "post": {
+        "summary": "Prepare a recovery link",
+        "operationId": "postApiV1AuthForgotpassword",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { "email": { "type": "string" } },
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": { "description": "Prepare a recovery link" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Kampanya-Request",
+            "required": true,
+            "schema": { "type": "string", "const": "1" }
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/reset-password": {
+      "post": {
+        "summary": "Consume a recovery link",
+        "operationId": "postApiV1AuthResetpassword",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": { "type": "string" },
+                  "password": { "type": "string" }
+                },
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": { "description": "Consume a recovery link" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Kampanya-Request",
+            "required": true,
+            "schema": { "type": "string", "const": "1" }
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/invitations/accept": {
+      "post": {
+        "summary": "Accept a business invitation",
+        "operationId": "postApiV1AuthInvitationsAccept",
+        "security": [{ "sessionCookie": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { "token": { "type": "string" } },
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": { "description": "Accept a business invitation" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Kampanya-Request",
+            "required": true,
+            "schema": { "type": "string", "const": "1" }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ]
+      }
+    },
+    "/api/v1/businesses": {
+      "get": {
+        "summary": "List current memberships",
+        "operationId": "getApiV1Businesses",
+        "security": [{ "sessionCookie": [] }],
+        "responses": {
+          "200": { "description": "List current memberships" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a business",
+        "operationId": "postApiV1Businesses",
+        "security": [{ "sessionCookie": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Create a business" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Kampanya-Request",
+            "required": true,
+            "schema": { "type": "string", "const": "1" }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ]
+      }
+    },
+    "/api/v1/businesses/{businessId}": {
+      "get": {
+        "summary": "Read a business",
+        "operationId": "getApiV1BusinessesBusinessId",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Read a business" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update core business details",
+        "operationId": "patchApiV1BusinessesBusinessId",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "header",
+            "name": "X-Kampanya-Request",
+            "required": true,
+            "schema": { "type": "string", "const": "1" }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Update core business details" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      }
+    },
+    "/api/v1/businesses/{businessId}/members": {
+      "get": {
+        "summary": "List members",
+        "operationId": "getApiV1BusinessesBusinessIdMembers",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "List members" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      }
+    },
+    "/api/v1/businesses/{businessId}/members/{userId}": {
+      "patch": {
+        "summary": "Change a member role",
+        "operationId": "patchApiV1BusinessesBusinessIdMembersUserId",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "header",
+            "name": "X-Kampanya-Request",
+            "required": true,
+            "schema": { "type": "string", "const": "1" }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Change a member role" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Remove a member",
+        "operationId": "deleteApiV1BusinessesBusinessIdMembersUserId",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "header",
+            "name": "X-Kampanya-Request",
+            "required": true,
+            "schema": { "type": "string", "const": "1" }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Remove a member" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      }
+    },
+    "/api/v1/businesses/{businessId}/invitations": {
+      "get": {
+        "summary": "List pending invitations",
+        "operationId": "getApiV1BusinessesBusinessIdInvitations",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "List pending invitations" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      },
+      "post": {
+        "summary": "Prepare an invitation",
+        "operationId": "postApiV1BusinessesBusinessIdInvitations",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "header",
+            "name": "X-Kampanya-Request",
+            "required": true,
+            "schema": { "type": "string", "const": "1" }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": { "description": "Prepare an invitation" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      }
+    },
+    "/api/v1/businesses/{businessId}/brand": {
+      "get": {
+        "summary": "Read brand context",
+        "operationId": "getApiV1BusinessesBusinessIdBrand",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Read brand context" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      },
+      "put": {
+        "summary": "Save brand context",
+        "operationId": "putApiV1BusinessesBusinessIdBrand",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "header",
+            "name": "X-Kampanya-Request",
+            "required": true,
+            "schema": { "type": "string", "const": "1" }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Save brand context" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      }
+    },
+    "/api/v1/businesses/{businessId}/audiences": {
+      "get": {
+        "summary": "List audiences",
+        "operationId": "getApiV1BusinessesBusinessIdAudiences",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "List audiences" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create an audience",
+        "operationId": "postApiV1BusinessesBusinessIdAudiences",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "header",
+            "name": "X-Kampanya-Request",
+            "required": true,
+            "schema": { "type": "string", "const": "1" }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Create an audience" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      }
+    },
+    "/api/v1/businesses/{businessId}/audiences/{audienceId}": {
+      "patch": {
+        "summary": "Update an audience",
+        "operationId": "patchApiV1BusinessesBusinessIdAudiencesAudienceId",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "path",
+            "name": "audienceId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "header",
+            "name": "X-Kampanya-Request",
+            "required": true,
+            "schema": { "type": "string", "const": "1" }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Update an audience" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete an audience",
+        "operationId": "deleteApiV1BusinessesBusinessIdAudiencesAudienceId",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "path",
+            "name": "audienceId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "header",
+            "name": "X-Kampanya-Request",
+            "required": true,
+            "schema": { "type": "string", "const": "1" }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Delete an audience" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      }
+    },
+    "/api/v1/businesses/{businessId}/offerings": {
+      "get": {
+        "summary": "List offers",
+        "operationId": "getApiV1BusinessesBusinessIdOfferings",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "List offers" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create an offer",
+        "operationId": "postApiV1BusinessesBusinessIdOfferings",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "header",
+            "name": "X-Kampanya-Request",
+            "required": true,
+            "schema": { "type": "string", "const": "1" }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Create an offer" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      }
+    },
+    "/api/v1/businesses/{businessId}/offerings/{offeringId}": {
+      "patch": {
+        "summary": "Update an offer",
+        "operationId": "patchApiV1BusinessesBusinessIdOfferingsOfferingId",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "path",
+            "name": "offeringId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "header",
+            "name": "X-Kampanya-Request",
+            "required": true,
+            "schema": { "type": "string", "const": "1" }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Update an offer" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete an offer",
+        "operationId": "deleteApiV1BusinessesBusinessIdOfferingsOfferingId",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "path",
+            "name": "offeringId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "header",
+            "name": "X-Kampanya-Request",
+            "required": true,
+            "schema": { "type": "string", "const": "1" }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Delete an offer" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      }
+    },
+    "/api/v1/businesses/{businessId}/evidence": {
+      "get": {
+        "summary": "List marketing evidence",
+        "operationId": "getApiV1BusinessesBusinessIdEvidence",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "List marketing evidence" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create evidence",
+        "operationId": "postApiV1BusinessesBusinessIdEvidence",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "header",
+            "name": "X-Kampanya-Request",
+            "required": true,
+            "schema": { "type": "string", "const": "1" }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Create evidence" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      }
+    },
+    "/api/v1/businesses/{businessId}/evidence/{evidenceId}": {
+      "patch": {
+        "summary": "Update evidence and clear confirmation",
+        "operationId": "patchApiV1BusinessesBusinessIdEvidenceEvidenceId",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "path",
+            "name": "evidenceId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "header",
+            "name": "X-Kampanya-Request",
+            "required": true,
+            "schema": { "type": "string", "const": "1" }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Update evidence and clear confirmation" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete evidence",
+        "operationId": "deleteApiV1BusinessesBusinessIdEvidenceEvidenceId",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "path",
+            "name": "evidenceId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "header",
+            "name": "X-Kampanya-Request",
+            "required": true,
+            "schema": { "type": "string", "const": "1" }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Delete evidence" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      }
+    },
+    "/api/v1/businesses/{businessId}/evidence/{evidenceId}/confirm": {
+      "post": {
+        "summary": "Owner confirms evidence",
+        "operationId": "postApiV1BusinessesBusinessIdEvidenceEvidenceIdConfirm",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "path",
+            "name": "evidenceId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "header",
+            "name": "X-Kampanya-Request",
+            "required": true,
+            "schema": { "type": "string", "const": "1" }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Owner confirms evidence" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      }
+    },
+    "/api/v1/businesses/{businessId}/briefs": {
+      "get": {
+        "summary": "List strategy briefs",
+        "operationId": "getApiV1BusinessesBusinessIdBriefs",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "List strategy briefs" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a strategy brief",
+        "operationId": "postApiV1BusinessesBusinessIdBriefs",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "header",
+            "name": "X-Kampanya-Request",
+            "required": true,
+            "schema": { "type": "string", "const": "1" }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Create a strategy brief" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      }
+    },
+    "/api/v1/businesses/{businessId}/briefs/{briefId}/suggest": {
+      "post": {
+        "summary": "Suggest strategy with AI",
+        "operationId": "postApiV1BusinessesBusinessIdBriefsBriefIdSuggest",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "path",
+            "name": "briefId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "header",
+            "name": "X-Kampanya-Request",
+            "required": true,
+            "schema": { "type": "string", "const": "1" }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Suggest strategy with AI" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      }
+    },
+    "/api/v1/businesses/{businessId}/briefs/{briefId}/generate": {
+      "post": {
+        "summary": "Generate an editable content draft",
+        "operationId": "postApiV1BusinessesBusinessIdBriefsBriefIdGenerate",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "path",
+            "name": "briefId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "header",
+            "name": "X-Kampanya-Request",
+            "required": true,
+            "schema": { "type": "string", "const": "1" }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "201": { "description": "Generate an editable content draft" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      }
+    },
+    "/api/v1/businesses/{businessId}/generations": {
+      "get": {
+        "summary": "List generation history",
+        "operationId": "getApiV1BusinessesBusinessIdGenerations",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "List generation history" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      }
+    },
+    "/api/v1/businesses/{businessId}/content": {
+      "get": {
+        "summary": "List content",
+        "operationId": "getApiV1BusinessesBusinessIdContent",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "List content" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      }
+    },
+    "/api/v1/businesses/{businessId}/content/{contentId}": {
+      "get": {
+        "summary": "Read content and its history",
+        "operationId": "getApiV1BusinessesBusinessIdContentContentId",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "path",
+            "name": "contentId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Read content and its history" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update content planning details",
+        "operationId": "patchApiV1BusinessesBusinessIdContentContentId",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "path",
+            "name": "contentId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "header",
+            "name": "X-Kampanya-Request",
+            "required": true,
+            "schema": { "type": "string", "const": "1" }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Update content planning details" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      }
+    },
+    "/api/v1/businesses/{businessId}/content/{contentId}/revisions": {
+      "post": {
+        "summary": "Save a new revision",
+        "operationId": "postApiV1BusinessesBusinessIdContentContentIdRevisions",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "path",
+            "name": "contentId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "header",
+            "name": "X-Kampanya-Request",
+            "required": true,
+            "schema": { "type": "string", "const": "1" }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "body": { "type": "string" },
+                  "expectedVersion": { "type": "integer" }
+                },
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Save a new revision" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      }
+    },
+    "/api/v1/businesses/{businessId}/content/{contentId}/submit": {
+      "post": {
+        "summary": "Submit a draft for review",
+        "operationId": "postApiV1BusinessesBusinessIdContentContentIdSubmit",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "path",
+            "name": "contentId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "header",
+            "name": "X-Kampanya-Request",
+            "required": true,
+            "schema": { "type": "string", "const": "1" }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Submit a draft for review" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      }
+    },
+    "/api/v1/businesses/{businessId}/content/{contentId}/decisions": {
+      "post": {
+        "summary": "Review submitted content",
+        "operationId": "postApiV1BusinessesBusinessIdContentContentIdDecisions",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "path",
+            "name": "contentId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "header",
+            "name": "X-Kampanya-Request",
+            "required": true,
+            "schema": { "type": "string", "const": "1" }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "outcome": { "type": "string" },
+                  "note": { "type": "string" },
+                  "checklist": { "type": "object" }
+                },
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Review submitted content" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      }
+    },
+    "/api/v1/businesses/{businessId}/content/{contentId}/publish": {
+      "post": {
+        "summary": "Mark approved content published manually",
+        "operationId": "postApiV1BusinessesBusinessIdContentContentIdPublish",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "path",
+            "name": "contentId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "header",
+            "name": "X-Kampanya-Request",
+            "required": true,
+            "schema": { "type": "string", "const": "1" }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Mark approved content published manually" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      }
+    },
+    "/api/v1/businesses/{businessId}/campaigns": {
+      "get": {
+        "summary": "List campaigns",
+        "operationId": "getApiV1BusinessesBusinessIdCampaigns",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "List campaigns" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a campaign",
+        "operationId": "postApiV1BusinessesBusinessIdCampaigns",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "header",
+            "name": "X-Kampanya-Request",
+            "required": true,
+            "schema": { "type": "string", "const": "1" }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Create a campaign" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      }
+    },
+    "/api/v1/businesses/{businessId}/campaigns/{campaignId}": {
+      "patch": {
+        "summary": "Update a campaign",
+        "operationId": "patchApiV1BusinessesBusinessIdCampaignsCampaignId",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "path",
+            "name": "campaignId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "header",
+            "name": "X-Kampanya-Request",
+            "required": true,
+            "schema": { "type": "string", "const": "1" }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Update a campaign" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      }
+    },
+    "/api/v1/businesses/{businessId}/calendar": {
+      "get": {
+        "summary": "List planned content in a date range",
+        "operationId": "getApiV1BusinessesBusinessIdCalendar",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "businessId",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "in": "query",
+            "name": "from",
+            "required": true,
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "required": true,
+            "schema": { "type": "string", "format": "date" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "List planned content in a date range" },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiError" }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permission or invalid CSRF token"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "kampanya_session",
+        "description": "Production uses __Host-kampanya_session."
+      }
+    },
+    "schemas": {
+      "ApiError": {
+        "type": "object",
+        "required": ["error", "requestId"],
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": ["code", "message"],
+            "properties": {
+              "code": { "type": "string" },
+              "message": { "type": "string" }
+            }
+          },
+          "requestId": { "type": "string", "format": "uuid" }
+        }
+      }
+    }
+  }
+}

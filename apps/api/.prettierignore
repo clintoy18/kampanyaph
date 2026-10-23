@@ -1,0 +1,6 @@
+AGENTS.md
+dist/
+.test-dist/
+generated/
+node_modules/
+src/generated/
